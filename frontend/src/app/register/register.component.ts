@@ -113,8 +113,8 @@ export class RegisterComponent implements OnInit,AfterViewInit  {
   register() {
     if (this.registerForm.valid) {
       if(diffInYears >= 18){
-        if(this.emailinput.value == email || true){
-          if(otpcoden == this.otpinput.value || true){
+        if(this.emailinput.value == email){
+          if(otpcoden == this.otpinput.value){
             this.user = Object.assign({}, this.registerForm.value);
             this.authService.register(this.user).subscribe(() => {
               this.alertify.success('Registration Successful.');
@@ -126,10 +126,10 @@ export class RegisterComponent implements OnInit,AfterViewInit  {
               });
             });
           }else{
-            //this.alertify.error("Wrong OTP code");
+            this.alertify.error("Wrong OTP code");
           }
         }else{
-          //this.alertify.error("You changed the email address, send new OTP");
+          this.alertify.error("send new OTP");
         }
       }else{
         this.alertify.error("You have not reach the minimum age of 18");
