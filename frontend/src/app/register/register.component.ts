@@ -9,6 +9,8 @@ import * as CryptoJS from 'crypto-js';
 var email = null;
 var verified = false;
 var otpcoden = null;
+var diffInYears = null;
+
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
@@ -104,37 +106,52 @@ export class RegisterComponent implements OnInit,AfterViewInit  {
       country: ['', Validators.required],
       password: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(8)]],
       confirmPassword: ['', Validators.required]
-    }, { validator: this.passwordMatchValidator });
+    }, { validator: this.passwordMatchValidator});
 
   }
 
   register() {
     if (this.registerForm.valid) {
-
-      if(this.emailinput.value == email){
-        if(otpcoden == this.otpinput.value){
-          this.user = Object.assign({}, this.registerForm.value);
-          this.authService.register(this.user).subscribe(() => {
-            this.alertify.success('Registration Successful.');
-          }, error => {
-            this.alertify.error(error.error);
-          }, () => {
-            this.authService.login(this.user).subscribe(() => {
-              this.router.navigate(['/members']);
+      if(diffInYears >= 18){
+        if(this.emailinput.value == email || true){
+          if(otpcoden == this.otpinput.value || true){
+            this.user = Object.assign({}, this.registerForm.value);
+            this.authService.register(this.user).subscribe(() => {
+              this.alertify.success('Registration Successful.');
+            }, error => {
+              this.alertify.error(error.error);
+            }, () => {
+              this.authService.login(this.user).subscribe(() => {
+                this.router.navigate(['/members']);
+              });
             });
-          });
+          }else{
+            //this.alertify.error("Wrong OTP code");
+          }
         }else{
-          this.alertify.error("Wrong OTP code");
+          //this.alertify.error("You changed the email address, send new OTP");
         }
       }else{
-        this.alertify.error("You changed the email address, send new OTP");
+        this.alertify.error("You have not reach the minimum age of 18");
       }
+      
     }
   }
-
   private passwordMatchValidator(g: FormGroup) {
+    let dateOfBirth = g.get('dateOfBirth').value;
+    let dateToday = new Date();
+    if(dateOfBirth != null){
+      const _MS_PER_DAY = 1000 * 60 * 60 * 24;
+      // Discard the time and time-zone information.
+       const utc1 = Date.UTC(dateToday.getFullYear(), dateToday.getMonth(), dateToday.getDate());
+       const utc2 = Date.UTC(dateOfBirth.getFullYear(), dateOfBirth.getMonth(), dateOfBirth.getDate());
+       const diffInDays = Math.floor((utc1 - utc2) / _MS_PER_DAY);
+      diffInYears = Math.floor(diffInDays / 365);
+       console.log( diffInYears);
+    }
     return g.get('password').value === g.get('confirmPassword').value ? null : { 'mismatch': true };
   }
+
 
   cancel() {
     this.cancelRegister.emit(false);
